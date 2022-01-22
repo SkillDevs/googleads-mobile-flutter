@@ -16,7 +16,11 @@ package io.flutter.plugins.googlemobileads;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
 import io.flutter.plugin.platform.PlatformView;
 import io.flutter.util.Preconditions;
 
@@ -59,12 +63,30 @@ class FlutterBannerAd extends FlutterAd implements FlutterAdLoadedListener {
 
   @Override
   void load() {
-    adView = bannerAdCreator.createAdView();
-    adView.setAdUnitId(adUnitId);
-    adView.setAdSize(size.getAdSize());
-    adView.setOnPaidEventListener(new FlutterPaidEventListener(manager, this));
-    adView.setAdListener(new FlutterBannerAdListener(adId, manager, this));
-    adView.loadAd(request.asAdRequest(adUnitId));
+    try {
+      adView = bannerAdCreator.createAdView();
+      adView.setAdUnitId(adUnitId);
+      adView.setAdSize(size.getAdSize());
+      adView.setOnPaidEventListener(new FlutterPaidEventListener(manager, this));
+      adView.setAdListener(new FlutterBannerAdListener(adId, manager, this));
+      adView.loadAd(request.asAdRequest(adUnitId));
+    } catch(Throwable t) {
+      try {
+        this.dispose();
+      } catch(Throwable t2) {
+        adView = null;
+      }
+
+      manager.onAdFailedToLoad(
+              adId,
+              new FlutterAd.FlutterLoadAdError(
+                      AdRequest.ERROR_CODE_INTERNAL_ERROR,
+                      MobileAds.ERROR_DOMAIN,
+                      "Native exception while loading ad",
+                      null
+              )
+      );
+    }
   }
 
   @Nullable
