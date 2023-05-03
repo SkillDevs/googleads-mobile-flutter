@@ -14,12 +14,17 @@
 
 // ignore_for_file: public_member_api_docs
 
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+
 import 'anchored_adaptive_example.dart';
-import 'inline_adaptive_example.dart';
 import 'fluid_example.dart';
+import 'inline_adaptive_example.dart';
+import 'native_template_example.dart';
 import 'reusable_inline_example.dart';
+import 'webview_example.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,22 +49,37 @@ class _MyAppState extends State<MyApp> {
     nonPersonalizedAds: true,
   );
 
+  static const interstitialButtonText = 'InterstitialAd';
+  static const rewardedButtonText = 'RewardedAd';
+  static const rewardedInterstitialButtonText = 'RewardedInterstitialAd';
+  static const fluidButtonText = 'Fluid';
+  static const inlineAdaptiveButtonText = 'Inline adaptive';
+  static const anchoredAdaptiveButtonText = 'Anchored adaptive';
+  static const nativeTemplateButtonText = 'Native template';
+  static const webviewExampleButtonText = 'Register WebView';
+
   InterstitialAd? _interstitialAd;
   int _numInterstitialLoadAttempts = 0;
 
   RewardedAd? _rewardedAd;
   int _numRewardedLoadAttempts = 0;
 
+  RewardedInterstitialAd? _rewardedInterstitialAd;
+  int _numRewardedInterstitialLoadAttempts = 0;
+
   @override
   void initState() {
     super.initState();
     _createInterstitialAd();
     _createRewardedAd();
+    _createRewardedInterstitialAd();
   }
 
   void _createInterstitialAd() {
     InterstitialAd.load(
-        adUnitId: InterstitialAd.testAdUnitId,
+        adUnitId: Platform.isAndroid
+            ? 'ca-app-pub-3940256099942544/1033173712'
+            : 'ca-app-pub-3940256099942544/4411468910',
         request: request,
         adLoadCallback: InterstitialAdLoadCallback(
           onAdLoaded: (InterstitialAd ad) {
@@ -72,7 +92,7 @@ class _MyAppState extends State<MyApp> {
             print('InterstitialAd failed to load: $error.');
             _numInterstitialLoadAttempts += 1;
             _interstitialAd = null;
-            if (_numInterstitialLoadAttempts <= maxFailedLoadAttempts) {
+            if (_numInterstitialLoadAttempts < maxFailedLoadAttempts) {
               _createInterstitialAd();
             }
           },
@@ -104,7 +124,9 @@ class _MyAppState extends State<MyApp> {
 
   void _createRewardedAd() {
     RewardedAd.load(
-        adUnitId: RewardedAd.testAdUnitId,
+        adUnitId: Platform.isAndroid
+            ? 'ca-app-pub-3940256099942544/5224354917'
+            : 'ca-app-pub-3940256099942544/1712485313',
         request: request,
         rewardedAdLoadCallback: RewardedAdLoadCallback(
           onAdLoaded: (RewardedAd ad) {
@@ -116,7 +138,7 @@ class _MyAppState extends State<MyApp> {
             print('RewardedAd failed to load: $error');
             _rewardedAd = null;
             _numRewardedLoadAttempts += 1;
-            if (_numRewardedLoadAttempts <= maxFailedLoadAttempts) {
+            if (_numRewardedLoadAttempts < maxFailedLoadAttempts) {
               _createRewardedAd();
             }
           },
@@ -144,10 +166,64 @@ class _MyAppState extends State<MyApp> {
     );
 
     _rewardedAd!.setImmersiveMode(true);
-    _rewardedAd!.show(onUserEarnedReward: (RewardedAd ad, RewardItem reward) {
-      print('$ad with reward $RewardItem(${reward.amount}, ${reward.type}');
+    _rewardedAd!.show(
+        onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+      print('$ad with reward $RewardItem(${reward.amount}, ${reward.type})');
     });
     _rewardedAd = null;
+  }
+
+  void _createRewardedInterstitialAd() {
+    RewardedInterstitialAd.load(
+        adUnitId: Platform.isAndroid
+            ? 'ca-app-pub-3940256099942544/5354046379'
+            : 'ca-app-pub-3940256099942544/6978759866',
+        request: request,
+        rewardedInterstitialAdLoadCallback: RewardedInterstitialAdLoadCallback(
+          onAdLoaded: (RewardedInterstitialAd ad) {
+            print('$ad loaded.');
+            _rewardedInterstitialAd = ad;
+            _numRewardedInterstitialLoadAttempts = 0;
+          },
+          onAdFailedToLoad: (LoadAdError error) {
+            print('RewardedInterstitialAd failed to load: $error');
+            _rewardedInterstitialAd = null;
+            _numRewardedInterstitialLoadAttempts += 1;
+            if (_numRewardedInterstitialLoadAttempts < maxFailedLoadAttempts) {
+              _createRewardedInterstitialAd();
+            }
+          },
+        ));
+  }
+
+  void _showRewardedInterstitialAd() {
+    if (_rewardedInterstitialAd == null) {
+      print('Warning: attempt to show rewarded interstitial before loaded.');
+      return;
+    }
+    _rewardedInterstitialAd!.fullScreenContentCallback =
+        FullScreenContentCallback(
+      onAdShowedFullScreenContent: (RewardedInterstitialAd ad) =>
+          print('$ad onAdShowedFullScreenContent.'),
+      onAdDismissedFullScreenContent: (RewardedInterstitialAd ad) {
+        print('$ad onAdDismissedFullScreenContent.');
+        ad.dispose();
+        _createRewardedInterstitialAd();
+      },
+      onAdFailedToShowFullScreenContent:
+          (RewardedInterstitialAd ad, AdError error) {
+        print('$ad onAdFailedToShowFullScreenContent: $error');
+        ad.dispose();
+        _createRewardedInterstitialAd();
+      },
+    );
+
+    _rewardedInterstitialAd!.setImmersiveMode(true);
+    _rewardedInterstitialAd!.show(
+        onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+      print('$ad with reward $RewardItem(${reward.amount}, ${reward.type})');
+    });
+    _rewardedInterstitialAd = null;
   }
 
   @override
@@ -155,6 +231,7 @@ class _MyAppState extends State<MyApp> {
     super.dispose();
     _interstitialAd?.dispose();
     _rewardedAd?.dispose();
+    _rewardedInterstitialAd?.dispose();
   }
 
   @override
@@ -168,30 +245,47 @@ class _MyAppState extends State<MyApp> {
               PopupMenuButton<String>(
                 onSelected: (String result) {
                   switch (result) {
-                    case 'InterstitialAd':
+                    case interstitialButtonText:
                       _showInterstitialAd();
                       break;
-                    case 'RewardedAd':
+                    case rewardedButtonText:
                       _showRewardedAd();
                       break;
-                    case 'Fluid':
+                    case rewardedInterstitialButtonText:
+                      _showRewardedInterstitialAd();
+                      break;
+                    case fluidButtonText:
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => FluidExample()),
                       );
                       break;
-                    case 'Inline adaptive':
+                    case inlineAdaptiveButtonText:
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => InlineAdaptiveExample()),
                       );
                       break;
-                    case 'Anchored adaptive':
+                    case anchoredAdaptiveButtonText:
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => AnchoredAdaptiveExample()),
+                      );
+                      break;
+                    case nativeTemplateButtonText:
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => NativeTemplateExample()),
+                      );
+                      break;
+                    case webviewExampleButtonText:
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => WebViewExample()),
                       );
                       break;
                     default:
@@ -200,24 +294,36 @@ class _MyAppState extends State<MyApp> {
                 },
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                   PopupMenuItem<String>(
-                    value: 'InterstitialAd',
-                    child: Text('InterstitialAd'),
+                    value: interstitialButtonText,
+                    child: Text(interstitialButtonText),
                   ),
                   PopupMenuItem<String>(
-                    value: 'RewardedAd',
-                    child: Text('RewardedAd'),
+                    value: rewardedButtonText,
+                    child: Text(rewardedButtonText),
                   ),
                   PopupMenuItem<String>(
-                    value: 'Fluid',
-                    child: Text('Fluid'),
+                    value: rewardedInterstitialButtonText,
+                    child: Text(rewardedInterstitialButtonText),
                   ),
                   PopupMenuItem<String>(
-                    value: 'Inline adaptive',
-                    child: Text('Inline adaptive'),
+                    value: fluidButtonText,
+                    child: Text(fluidButtonText),
                   ),
                   PopupMenuItem<String>(
-                    value: 'Anchored adaptive',
-                    child: Text('Anchored adaptive'),
+                    value: inlineAdaptiveButtonText,
+                    child: Text(inlineAdaptiveButtonText),
+                  ),
+                  PopupMenuItem<String>(
+                    value: anchoredAdaptiveButtonText,
+                    child: Text(anchoredAdaptiveButtonText),
+                  ),
+                  PopupMenuItem<String>(
+                    value: nativeTemplateButtonText,
+                    child: Text(nativeTemplateButtonText),
+                  ),
+                  PopupMenuItem<String>(
+                    value: webviewExampleButtonText,
+                    child: Text(webviewExampleButtonText),
                   ),
                 ],
               ),
