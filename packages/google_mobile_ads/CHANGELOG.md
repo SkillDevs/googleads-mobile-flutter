@@ -1,3 +1,18 @@
+## 4.0.0
+* The minimum supported Flutter version is now 3.7.0.
+* Removes `visibility_detector` as a dependency, and the workaround added in
+  https://github.com/googleads/googleads-mobile-flutter/pull/610.
+* Adds null checks for Ad Ids for Android in
+  https://github.com/googleads/googleads-mobile-flutter/pull/967
+* Updated Android dependencies in https://github.com/googleads/googleads-mobile-flutter/pull/843
+* Updates GMA iOS dependency to 10.11.0
+* Updates GMA Android dependency to 22.5.0
+
+## 3.1.0
+* Updates GMA iOS dependency to 10.9.0
+* Adds explicit UMP SDK 2.1.0 dependency for Android.
+* Fixes https://github.com/googleads/googleads-mobile-flutter/issues/735
+
 ## 3.0.0
 * Adds support for `MobileAds.registerWebView()`. This API supports in-app ad monetization for
   `WebView`s. You can read more in the [android](https://developers.google.com/admob/android/webview)
@@ -7,6 +22,7 @@
   [webview_flutter_android](https://pub.dev/packages/webview_flutter_android)
 * Updates Android GMA dependency to 22.0.0 and iOS dependency to 10.4.0
 * Fixes https://github.com/googleads/googleads-mobile-flutter/issues/700
+* Updates minimum supported Xcode version to 14.1.
 
 ## 2.4.0
 * Adds support for native templates, which are predefined layouts for native ads.
