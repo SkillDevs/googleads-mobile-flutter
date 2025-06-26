@@ -32,7 +32,9 @@ import io.flutter.plugins.googlemobileads.nativetemplates.FlutterNativeTemplateF
 import io.flutter.plugins.googlemobileads.nativetemplates.FlutterNativeTemplateStyle;
 import io.flutter.plugins.googlemobileads.nativetemplates.FlutterNativeTemplateTextStyle;
 import io.flutter.plugins.googlemobileads.nativetemplates.FlutterNativeTemplateType;
+import java.lang.reflect.InvocationTargetException;
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +43,6 @@ import java.util.Map;
  * Encodes and decodes values by reading from a ByteBuffer and writing to a ByteArrayOutputStream.
  */
 class AdMessageCodec extends StandardMessageCodec {
-
   // The type values below must be consistent for each platform.
   private static final byte VALUE_AD_SIZE = (byte) 128;
   private static final byte VALUE_AD_REQUEST = (byte) 129;
@@ -71,7 +72,11 @@ class AdMessageCodec extends StandardMessageCodec {
 
   @NonNull Context context;
   @NonNull final FlutterAdSize.AdSizeFactory adSizeFactory;
-  @Nullable private MediationNetworkExtrasProvider mediationNetworkExtrasProvider;
+
+  @SuppressWarnings("deprecation") // Keeping for compatibility
+  @Nullable
+  private MediationNetworkExtrasProvider mediationNetworkExtrasProvider;
+
   @NonNull private final FlutterRequestAgentProvider requestAgentProvider;
 
   AdMessageCodec(
@@ -95,6 +100,7 @@ class AdMessageCodec extends StandardMessageCodec {
     this.context = context;
   }
 
+  @SuppressWarnings("deprecation") // Keeping for compatibility
   void setMediationNetworkExtrasProvider(
       @Nullable MediationNetworkExtrasProvider mediationNetworkExtrasProvider) {
     this.mediationNetworkExtrasProvider = mediationNetworkExtrasProvider;
@@ -303,11 +309,16 @@ class AdMessageCodec extends StandardMessageCodec {
         try {
           assert className != null;
           Class<?> cls = Class.forName(className);
-          FlutterMediationExtras flutterExtras = (FlutterMediationExtras) cls.newInstance();
+          FlutterMediationExtras flutterExtras = (FlutterMediationExtras) cls.getDeclaredConstructor()
+              .newInstance();
           flutterExtras.setMediationExtras(extras);
           return flutterExtras;
         } catch (ClassNotFoundException e) {
           Log.e("FlutterMediationExtras", "Class not found: " + className);
+        } catch (NoSuchMethodException e) {
+          Log.e("FlutterMediationExtras", "No such method found: " + className + ".getDeclaredConstructor()");
+        } catch (InvocationTargetException e) {
+          Log.e("FlutterMediationExtras", "Invocation Target Exception for: " + className);
         } catch (IllegalAccessException e) {
           Log.e("FlutterMediationExtras", "Illegal Access to " + className);
         } catch (InstantiationException e) {

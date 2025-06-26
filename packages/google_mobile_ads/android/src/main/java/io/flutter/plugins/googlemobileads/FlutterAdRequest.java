@@ -36,7 +36,11 @@ class FlutterAdRequest {
   @Nullable private final List<String> neighboringContentUrls;
   @Nullable private final Integer httpTimeoutMillis;
   @Nullable private final String mediationExtrasIdentifier;
-  @Nullable private final MediationNetworkExtrasProvider mediationNetworkExtrasProvider;
+
+  @SuppressWarnings("deprecation") // Keeping for compatibility
+  @Nullable
+  private final MediationNetworkExtrasProvider mediationNetworkExtrasProvider;
+
   @Nullable private final Map<String, String> adMobExtras;
   @NonNull private final String requestAgent;
   @Nullable private final List<FlutterMediationExtras> mediationExtras;
@@ -48,7 +52,11 @@ class FlutterAdRequest {
     @Nullable private List<String> neighboringContentUrls;
     @Nullable private Integer httpTimeoutMillis;
     @Nullable private String mediationExtrasIdentifier;
-    @Nullable private MediationNetworkExtrasProvider mediationNetworkExtrasProvider;
+
+    @SuppressWarnings("deprecation") // Keeping for compatibility
+    @Nullable
+    private MediationNetworkExtrasProvider mediationNetworkExtrasProvider;
+
     @Nullable private Map<String, String> adMobExtras;
     @NonNull private String requestAgent;
 
@@ -97,6 +105,7 @@ class FlutterAdRequest {
     }
 
     @CanIgnoreReturnValue
+    @SuppressWarnings("deprecation") // Keeping for compatibility
     Builder setMediationNetworkExtrasProvider(
         @Nullable MediationNetworkExtrasProvider mediationNetworkExtrasProvider) {
       this.mediationNetworkExtrasProvider = mediationNetworkExtrasProvider;
@@ -145,6 +154,7 @@ class FlutterAdRequest {
       return mediationExtrasIdentifier;
     }
 
+    @SuppressWarnings("deprecation") // Keeping for compatibility
     @Nullable
     protected MediationNetworkExtrasProvider getMediationNetworkExtrasProvider() {
       return mediationNetworkExtrasProvider;
@@ -180,6 +190,7 @@ class FlutterAdRequest {
     }
   }
 
+  @SuppressWarnings("deprecation") // Keeping for compatibility
   protected FlutterAdRequest(
       @Nullable List<String> keywords,
       @Nullable String contentUrl,
@@ -329,7 +340,8 @@ class FlutterAdRequest {
         && Objects.equals(httpTimeoutMillis, request.httpTimeoutMillis)
         && Objects.equals(mediationExtrasIdentifier, request.mediationExtrasIdentifier)
         && Objects.equals(mediationNetworkExtrasProvider, request.mediationNetworkExtrasProvider)
-        && Objects.equals(adMobExtras, request.adMobExtras);
+        && Objects.equals(adMobExtras, request.adMobExtras)
+        && Objects.equals(mediationExtras, request.mediationExtras);
   }
 
   @Override
